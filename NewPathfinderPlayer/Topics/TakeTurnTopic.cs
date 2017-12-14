@@ -106,23 +106,41 @@ namespace NewPathfinderPlayer.Topics
                         default:
                             return await PromptForNextMove(context);
                     }
+                case TopicStates.EndTurn:
+                    return false;
                 case TopicStates.ActionPrompt:
                     switch (context.TopIntent.Name)
                     {
                         case ("endTurn"):
                             TopicState = TopicStates.EndTurnConfirmation;
                             return await PromptForNextMove(context);
-                        case ("attackAction"):
+                        case ("standardAction"):
                             CombatRound.combatActions -= CombatRound.CombatActions.Standard;
+                            if (CombatRound.combatActions.HasFlag(CombatRound.CombatActions.DoubleMove))
+                                CombatRound.combatActions -= CombatRound.CombatActions.DoubleMove;
                             return await PromptForNextMove(context);
                         case ("moveAction"):
-                            CombatRound.combatActions -= CombatRound.CombatActions.Move - CombatRound.CombatActions.DoubleMove;
+                            CombatRound.combatActions -= CombatRound.CombatActions.Move;
+                            if (CombatRound.combatActions.HasFlag(CombatRound.CombatActions.DoubleMove))
+                                CombatRound.combatActions -= CombatRound.CombatActions.DoubleMove;
+                            if (CombatRound.combatActions.HasFlag(CombatRound.CombatActions.Swift))
+                                CombatRound.combatActions -= CombatRound.CombatActions.Swift;
                             return await PromptForNextMove(context);
                         case ("swiftAction"):
-                            CombatRound.combatActions -= CombatRound.CombatActions.Swift - CombatRound.CombatActions.DoubleMove - CombatRound.CombatActions.Move;
+                            CombatRound.combatActions -= CombatRound.CombatActions.Swift;
+                            if (CombatRound.combatActions.HasFlag(CombatRound.CombatActions.DoubleMove))
+                                CombatRound.combatActions -= CombatRound.CombatActions.DoubleMove;
+                            if (CombatRound.combatActions.HasFlag(CombatRound.CombatActions.Move))
+                                CombatRound.combatActions -= CombatRound.CombatActions.Move;
                             return await PromptForNextMove(context);
                         case ("doubleMoveAction"):
                             CombatRound.combatActions -= CombatRound.CombatActions.DoubleMove;
+                            if (CombatRound.combatActions.HasFlag(CombatRound.CombatActions.Swift))
+                                CombatRound.combatActions -= CombatRound.CombatActions.Swift;
+                            if (CombatRound.combatActions.HasFlag(CombatRound.CombatActions.Move))
+                                CombatRound.combatActions -= CombatRound.CombatActions.Move;
+                            if (CombatRound.combatActions.HasFlag(CombatRound.CombatActions.Standard))
+                                CombatRound.combatActions -= CombatRound.CombatActions.Standard;
                             return await PromptForNextMove(context);
 
                         default:
@@ -165,6 +183,7 @@ namespace NewPathfinderPlayer.Topics
             else
             {
                 TopicState = TopicStates.EndTurn;
+                context.Reply("You are out of moves.");
                 return true;
             }
         }
@@ -176,7 +195,7 @@ namespace NewPathfinderPlayer.Topics
         /// <returns>String of remaining actions</returns>
         private string ActionListToString(CombatRound.CombatActions combatActions)
         {
-            string temp = "You can do one of the following actions: ";
+            string temp = "You can do one of the following actions:";
             foreach (Enum value in Enum.GetValues(combatActions.GetType()))
             {
                 if (combatActions.HasFlag(value))

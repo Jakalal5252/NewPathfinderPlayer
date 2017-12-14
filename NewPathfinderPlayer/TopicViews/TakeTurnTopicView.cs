@@ -19,16 +19,16 @@ namespace NewPathfinderPlayer.TopicViews
         public const string ENDTURNCANCELED = "TakeTurnTopic.EndTurnCanceled";
         public const string CANCELCANCELED = "TakeTurnTopic.CancelCanceled";
         public const string CANCELREPROMPT = "TakeTurnTopic.CancelReprompt";
+        public const string ENDTURNCONFIRMATION = "TakeTurnTopic.EndTurnConfirmation";
         public const string TITLEPROMPT = "TakeTurnTopic.TitlePrompt";
         public const string TITLEVALIDATIONPROMPT = "TakeTurnTopic.TitleValidationPrompt";
         public const string TIMEPROMPT = "TakeTurnTopic.TimePrompt";
         public const string TIMEVALIDATIONPROMPT = "TakeTurnTopic.TimeValidationPrompt";
-        public const string ADDEDALARM = "TakeTurnTopic.AddedAlarm";
         public const string ADDCONFIRMATION = "TakeTurnTopic.AddConfirmation";
         public const string TIMEPROMPTFUTURE = "TakeTurnTopic.TimePromptFuture";
 
         /// <summary>
-        /// table of language functions which render output in various languages
+        /// Table of language functions which render output in various languages
         /// </summary>
         public static TemplateDictionary Templates = new TemplateDictionary
         {
@@ -37,8 +37,8 @@ namespace NewPathfinderPlayer.TopicViews
                 {
                     { STARTTOPIC, (context, data) => $"Ok, let's add an alarm." },
                     { CONFUSED, (context, data) => $"I am sorry, I didn't understand: {context.Request.Text}." },
+                    { ENDTURNCONFIRMATION, (context, data) => $"# EndTurn?\n\nDid you want to end your turn?\n\n\n\n(Yes or No)" },
                     { ENDTURN, (context, data) => $"# EndTurn?\n\nDid you want to end your turn?\n\n\n\n(Yes or No)" },
-                    { CANCELREPROMPT, (context, data) => $"# Cancel alarm?\n\nPlease answer the question with a \"yes\" or \"no\" reply. Did you want to cancel the ending your turn?" },
                     { ENDTURNCANCELED, (context, data) => $"OK, let's continue." }
                 }
         };
