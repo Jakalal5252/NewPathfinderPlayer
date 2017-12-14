@@ -67,8 +67,8 @@ namespace NewPathfinderPlayer.Topics
                 case ActivityTypes.Message:
                     switch (context.TopIntent?.Name)
                     {
-                        case "startTurn":
-                            // activeTopic = new AddTakeTurnTopic();
+                        case "takeTurn":
+                            activeTopic = new TakeTurnTopic();
                             context.State.Conversation[ConversationProperties.ACTIVETOPIC] = activeTopic;
                             return activeTopic.StartTopic(context);
 
