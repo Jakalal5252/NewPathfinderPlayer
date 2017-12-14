@@ -50,6 +50,7 @@ namespace NewPathfinderPlayer
             {
                 app.UseDeveloperExceptionPage();
             }
+
             app.UseAuthentication();
             app.UseMvc();
         }

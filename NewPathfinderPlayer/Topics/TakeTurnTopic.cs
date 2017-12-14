@@ -10,30 +10,29 @@ namespace NewPathfinderPlayer.Topics
     public class TakeTurnTopic : ITopic
     {
         /// <summary>
-        /// enumeration of states of the converation
+        /// Enumeration of the states of the converation
         /// </summary>
         public enum TopicStates
         {
-            // initial state
+            // Initial state
             Started,
 
-            // we asked for title
+            // Asks for the user's next move
             ActionPrompt,
 
-            // we asked for confirmation to cancel
+            // Ends the turn due to no more actions being left in the pool
             EndTurn,
 
-            // we asked for confirmation to add
+            // We ask for confirmation that the user wants to end their turn
             EndTurnConfirmation,
         };
-
 
         public TakeTurnTopic()
         {
         }
 
         /// <summary>
-        /// Alarm object representing the information being gathered by the conversation before it is committed
+        /// CombatRound representing the information being gathered by the conversation
         /// </summary>
         public CombatRound CombatRound { get; set; }
 
@@ -45,34 +44,31 @@ namespace NewPathfinderPlayer.Topics
         public string Name { get; set; } = "TakeTurn";
 
         /// <summary>
-        /// Called when the add alarm topic is started
+        /// Called when the add take turn topic is started
         /// </summary>
         /// <param name="context"></param>
         /// <returns></returns>
         public Task<bool> StartTopic(BotContext context)
         {
-
-            this.CombatRound = new CombatRound()
+            CombatRound = new CombatRound()
             {
-                // initialize from intent entities
+                // Initialize fresh set of moves
                 combatActions = CombatRound.CombatActions.Move | CombatRound.CombatActions.Standard | CombatRound.CombatActions.Swift | CombatRound.CombatActions.DoubleMove
             };
 
             return PromptForNextMove(context);
         }
 
-
         /// <summary>
-        /// we call for every turn while the topic is still active
+        /// Called for every turn while the topic is still active
         /// </summary>
-        /// <param name="context"></param>
+        /// <param name="context">Current bot context</param>
         /// <returns></returns>
         public async Task<bool> ContinueTopic(BotContext context)
         {
-            // for messages
+            // Process an incoming message from the user
             if (context.Request.Type == ActivityTypes.Message)
             {
-
                 switch (context.TopIntent?.Name)
                 {
                     case "endTurn":
@@ -82,6 +78,7 @@ namespace NewPathfinderPlayer.Topics
                         return await ProcessTopicState(context);
                 }
             }
+
             return true;
         }
 
@@ -89,54 +86,50 @@ namespace NewPathfinderPlayer.Topics
         {
             string utterance = (context.Request.Text ?? "").Trim();
 
-            // we ar eusing TopicState to remember what we last asked
-            switch (this.TopicState)
+            switch (TopicState)
             {
                 case TopicStates.EndTurnConfirmation:
                     switch (context.TopIntent?.Name)
                     {
                         case "confirmYes":
 
-                            context.ReplyWith(TakeTurnTopicView.ENDTURN, this.CombatRound);
-                            // end topic
+                            context.ReplyWith(TakeTurnTopicView.ENDTURN, CombatRound);
+                            // End topic
                             TopicState = TopicStates.EndTurn;
                             return false;
 
                         case "confirmNo":
-                            context.ReplyWith(TakeTurnTopicView.ENDTURNCANCELED, this.CombatRound);
+                            context.ReplyWith(TakeTurnTopicView.ENDTURNCANCELED, CombatRound);
                             TopicState = TopicStates.ActionPrompt;
                             // TODO Should there be another call here?
                             return true;
                         default:
-                            return await this.PromptForNextMove(context);
+                            return await PromptForNextMove(context);
                     }
                 case TopicStates.ActionPrompt:
                     switch (context.TopIntent.Name)
                     {
                         case ("endTurn"):
-                            this.TopicState = TopicStates.EndTurnConfirmation;
-                            return await this.PromptForNextMove(context);
+                            TopicState = TopicStates.EndTurnConfirmation;
+                            return await PromptForNextMove(context);
                         case ("attackAction"):
-                            this.CombatRound.combatActions -= CombatRound.CombatActions.Standard;
-                            return await this.PromptForNextMove(context);
+                            CombatRound.combatActions -= CombatRound.CombatActions.Standard;
+                            return await PromptForNextMove(context);
                         case ("moveAction"):
-                            this.CombatRound.combatActions -= CombatRound.CombatActions.Move - CombatRound.CombatActions.DoubleMove;
-                            return await this.PromptForNextMove(context);
+                            CombatRound.combatActions -= CombatRound.CombatActions.Move - CombatRound.CombatActions.DoubleMove;
+                            return await PromptForNextMove(context);
                         case ("swiftAction"):
-                            this.CombatRound.combatActions -= CombatRound.CombatActions.Swift - CombatRound.CombatActions.DoubleMove - CombatRound.CombatActions.Move;
-                            return await this.PromptForNextMove(context);
+                            CombatRound.combatActions -= CombatRound.CombatActions.Swift - CombatRound.CombatActions.DoubleMove - CombatRound.CombatActions.Move;
+                            return await PromptForNextMove(context);
                         case ("doubleMoveAction"):
-                            this.CombatRound.combatActions -= CombatRound.CombatActions.DoubleMove;
-                            return await this.PromptForNextMove(context);
+                            CombatRound.combatActions -= CombatRound.CombatActions.DoubleMove;
+                            return await PromptForNextMove(context);
 
                         default:
                             return true;
                     };
                 default:
-                    {
-                        return true;
-                    };
-
+                    return true;
             };
         }
 
@@ -152,31 +145,35 @@ namespace NewPathfinderPlayer.Topics
         /// <returns></returns>
         public Task<bool> ResumeTopic(BotContext context)
         {
-            // simply prompt again based on our state
-            return this.PromptForNextMove(context);
+            // Prompt again based on our state
+            return PromptForNextMove(context);
         }
 
         /// <summary>
-        /// Shared method to get missing information
+        /// Shared method to get next action
         /// </summary>
-        /// <param name="context"></param>
+        /// <param name="context">Current bot context</param>
         /// <returns></returns>
         private async Task<bool> PromptForNextMove(BotContext context)
         {
-
-            if (this.CombatRound.combatActions != 0)
+            if (CombatRound.combatActions != 0)
             {
-                this.TopicState = TopicStates.ActionPrompt;
+                TopicState = TopicStates.ActionPrompt;
                 context.Reply(ActionListToString(CombatRound.combatActions));
                 return true;
             }
             else
             {
-                this.TopicState = TopicStates.EndTurn;
+                TopicState = TopicStates.EndTurn;
                 return true;
             }
         }
 
+        /// <summary>
+        /// Creates string based on the actions remaining for this turn
+        /// </summary>
+        /// <param name="combatActions">Current list of actions</param>
+        /// <returns>String of remaining actions</returns>
         private string ActionListToString(CombatRound.CombatActions combatActions)
         {
             string temp = "You can do one of the following actions: ";

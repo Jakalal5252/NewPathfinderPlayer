@@ -1,16 +1,15 @@
 ﻿
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.Bot.Connector;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Bot.Builder;
-using Microsoft.Bot.Builder.Azure;
 using Microsoft.Bot.Builder.Adapters;
 using Microsoft.Bot.Builder.Storage;
-using System.Text.RegularExpressions;
+using Microsoft.Bot.Connector;
 using Microsoft.Extensions.Configuration;
-using NewPathfinderPlayer.TopicViews;
 using NewPathfinderPlayer.Models;
 using NewPathfinderPlayer.Topics;
+using NewPathfinderPlayer.TopicViews;
+using System.Text.RegularExpressions;
 
 namespace NewPathfinderPlayer.Controllers
 {
@@ -27,7 +26,7 @@ namespace NewPathfinderPlayer.Controllers
                 string appId = configuration.GetSection(MicrosoftAppCredentials.MicrosoftAppIdKey)?.Value;
                 string appPassword = configuration.GetSection(MicrosoftAppCredentials.MicrosoftAppPasswordKey)?.Value;
 
-                // create the activity adapter to send/receive Activity objects 
+                // Create the activity adapter to send/receive Activity objects 
                 activityAdapter = new BotFrameworkAdapter(appId, appPassword);
                 bot = new Bot(activityAdapter)
                     .Use(new MemoryStorage())
@@ -44,28 +43,28 @@ namespace NewPathfinderPlayer.Controllers
                         .AddIntent("confirmNo", new Regex("(no|nope)", RegexOptions.IgnoreCase)))
                     .OnReceive(async (context) =>
                     {
-                        // --- Bot logic 
+                        // Bot logic 
                         bool handled = false;
-                        // Get the current ActiveTopic from my conversation state
+
+                        // Get the current active topic from my conversation state
                         var activeTopic = context.State.Conversation[ConversationProperties.ACTIVETOPIC] as ITopic;
 
-                        // if there isn't one 
+                        // If there isn't an active topic, create a default topic.
                         if (activeTopic == null)
                         {
-                            // use default topic
                             activeTopic = new DefaultTopic();
                             context.State.Conversation[ConversationProperties.ACTIVETOPIC] = activeTopic;
                             handled = await activeTopic.StartTopic(context);
                         }
                         else
                         {
-                            // continue to use the active topic
+                            // If there is an active topic, continue to use the active topic.
                             handled = await activeTopic.ContinueTopic(context);
                         }
 
                         if (handled == false && !(context.State.Conversation[ConversationProperties.ACTIVETOPIC] is DefaultTopic))
                         {
-                            // resume default topic
+                            // Resume default topic if no other topic was started.
                             activeTopic = new DefaultTopic();
                             context.State.Conversation[ConversationProperties.ACTIVETOPIC] = activeTopic;
                             handled = await activeTopic.ResumeTopic(context);

@@ -9,13 +9,13 @@ namespace NewPathfinderPlayer.TopicViews
         {
         }
 
-        // template ids
+        // Template ids
         public const string GREETING = "DefaultTopic.StartTopic";
         public const string RESUMETOPIC = "DefaultTopic.ResumeTopic";
         public const string HELP = "DefaultTopic.Help";
         public const string CONFUSED = "DefaultTopic.Confusion";
 
-        // template functions for rendeing responses in different a languages
+        // Template functions for rendeing responses in different a languages
         public static TemplateDictionary ReplyTemplates = new TemplateDictionary
         {
             ["default"] = new TemplateIdMap

@@ -13,7 +13,7 @@ namespace NewPathfinderPlayer.Topics
 
         public string Name { get; set; } = "Default";
 
-        // track in this topic if we have greeted the user already
+        // Track in this topic if we have greeted the user already
         public bool Greeted { get; set; } = false;
 
         /// <summary>
@@ -27,7 +27,7 @@ namespace NewPathfinderPlayer.Topics
             {
                 case ActivityTypes.ConversationUpdate:
                     {
-                        // greet when added to conversation
+                        // Greet when added to conversation
                         var activity = context.Request.AsConversationUpdateActivity();
                         if (activity.MembersAdded.Where(m => m.Id == activity.Recipient.Id).Any())
                         {
@@ -40,7 +40,7 @@ namespace NewPathfinderPlayer.Topics
                     break;
 
                 case ActivityTypes.Message:
-                    // greet on first message if we haven't already 
+                    // Greet on first message if we haven't already 
                     if (!Greeted)
                     {
                         context.ReplyWith(DefaultTopicView.GREETING);
@@ -54,9 +54,9 @@ namespace NewPathfinderPlayer.Topics
         }
 
         /// <summary>
-        /// Continue the topic, method which is routed to while this topic is active
+        /// Continue the topic. Method which is routed to while this topic is active
         /// </summary>
-        /// <param name="context"></param>
+        /// <param name="context">Current bot context</param>
         /// <returns></returns>
         public Task<bool> ContinueTopic(BotContext context)
         {
@@ -64,6 +64,7 @@ namespace NewPathfinderPlayer.Topics
 
             switch (context.Request.Type)
             {
+                // Process an incoming message from the user
                 case ActivityTypes.Message:
                     switch (context.TopIntent?.Name)
                     {
@@ -83,6 +84,7 @@ namespace NewPathfinderPlayer.Topics
                             return Task.FromResult(true);
                     }
 
+                // Process all other activity types
                 default:
                     break;
             }
@@ -93,7 +95,7 @@ namespace NewPathfinderPlayer.Topics
         /// <summary>
         /// Method which is called when this topic is resumed after an interruption
         /// </summary>
-        /// <param name="context"></param>
+        /// <param name="context">Current bot context</param>
         /// <returns></returns>
         public Task<bool> ResumeTopic(BotContext context)
         {

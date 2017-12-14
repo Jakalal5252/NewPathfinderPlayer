@@ -4,17 +4,20 @@ namespace NewPathfinderPlayer.Models
 {
     public class CombatRound
     {
-        public string Name = "";
+        /// <summary>
+        /// Flags to track which actions have been removed from the pool of actions for a single turn.
+        /// TODO: Implement remaining action types.
+        /// </summary>
         [Flags]
         public enum CombatActions
         {
-            Standard = 0,
-            Move = 1,
-            //FullRound = 2,
-            Swift = 4,
-            //Immediate = 8,
-            //Free = 16,
-            DoubleMove = 32
+            Standard = 1,
+            Move = 2,
+            // FullRound = 4,
+            Swift = 8,
+            // Immediate = 16,
+            // Free = 32,
+            DoubleMove = 64
         };
 
         public CombatActions combatActions;
